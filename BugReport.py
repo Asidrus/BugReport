@@ -27,9 +27,12 @@ class Column:
         self.Title = title
         self.Width = width
         if datavalidation is not None:
-            self.DataValidation = list()
-            for data in datavalidation:
-                self.DataValidation.append({"userEnteredValue": data})
+            if datavalidation == "Checkbox":
+                self.DataValidation = datavalidation
+            else:
+                self.DataValidation = list()
+                for data in datavalidation:
+                    self.DataValidation.append({"userEnteredValue": data})
 
 
 class Sheet:
@@ -55,30 +58,46 @@ class BugReport:
     CREDENTIALS_FILE: str
     ServiceAccount = 'acc-340@stable-ring-316114.iam.gserviceaccount.com'
 
-    def initColumns(self):
-        self.__Columns__.append(Column(0, "ID", 30))
-        self.__Columns__.append(Column(1, "Description", 350))
-        self.__Columns__.append(Column(2, "STR", 230))
-        self.__Columns__.append(Column(3, "Platform", 90, ["ALL", "Desktop", "Adaptive", "Windows", "MacOS", "IOS", "Android"]))
-        self.__Columns__.append(
-            Column(4, "Browser", 90, ["ALL", "Safari", "Google Chrome", "Yandex Chrome", "MI", "Mozila", "Opera"]))
-        self.__Columns__.append(
-            Column(5, "Severity", 100, ["S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)", "S5 (trivial)"]))
-        self.__Columns__.append(Column(6, "Status", 90, ["New", "Rejected", "Fixed", "Verified"]))
-        self.__Columns__.append(Column(7, "Comment", 230))
-        self.__Columns__.append(Column(8, "Feedback", 230))
+    def initColumns(self, type):
+        if type == "br":
+            self.__Columns__.append(Column(0, "ID", 30))
+            self.__Columns__.append(Column(1, "Description", 350))
+            self.__Columns__.append(Column(2, "STR", 230))
+            self.__Columns__.append(Column(3, "Platform", 90, ["ALL", "Desktop", "Adaptive", "Windows", "MacOS", "IOS", "Android"]))
+            self.__Columns__.append(
+                Column(4, "Browser", 90, ["ALL", "Safari", "Google Chrome", "Yandex Chrome", "MI", "Mozila", "Opera"]))
+            self.__Columns__.append(
+                Column(5, "Severity", 100, ["S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)", "S5 (trivial)"]))
+            self.__Columns__.append(Column(6, "Status", 90, ["New", "Rejected", "Fixed", "Verified"]))
+            self.__Columns__.append(Column(7, "Comment", 230))
+            self.__Columns__.append(Column(8, "Feedback", 230))
+        elif type == "fbf":
+            self.__Columns__.append(Column(0, "ID", 30))
+            self.__Columns__.append(Column(1, "", 30))
+            self.__Columns__.append(Column(2, "Description", 230))
+            self.__Columns__.append(Column(3, "Link", 120))
+            self.__Columns__.append(Column(4, "Name", 90))
+            self.__Columns__.append(Column(5, "Phone", 90))
+            self.__Columns__.append(Column(6, "Email", 90))
+            self.__Columns__.append(Column(7, "Platform", 90, ["Desktop", "IOS", "Android"]))
+            self.__Columns__.append(Column(8, "Request time", 100))
+            self.__Columns__.append(Column(9, "Status client", 50, "Checkbox"))
+            self.__Columns__.append(Column(10, "Status CRM", 50, "Checkbox"))
+            self.__Columns__.append(Column(11, "Comment", 230))
 
-    def initSheets(self):
-        self.__Sheets__.append(Sheet("Func", color.Red))
-        self.__Sheets__.append(Sheet("Layout", color.Yellow))
-        self.__Sheets__.append(Sheet("Design/Content", color.Green))
+    def initSheets(self, type):
+        if type == "br":
+            self.__Sheets__.append(Sheet("Func", color.Red))
+            self.__Sheets__.append(Sheet("Layout", color.Yellow))
+            self.__Sheets__.append(Sheet("Design/Content", color.Green))
+        elif type == "fbf":
+            self.__Sheets__.append(Sheet("Niidpo", color.Red))
 
     def RomanovskayaChanges(self):
         self.__Columns__[5] = Column(5, "Severity", 100, ["S0 (Simple)", "S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)", "S5 (trivial)"])
         self.__Columns__[6] = Column(6, "Status", 90, ["New", "Rejected", "Fixed", "Verified", "Check"])
 
-
-    def __init__(self, spreadsheet_id, CREDENTIALS_FILE='stable-ring-316114-8acf36454762.json', for_Romanovskaya = False):
+    def __init__(self, spreadsheet_id, CREDENTIALS_FILE='stable-ring-316114-8acf36454762.json'):
         self.SSID = spreadsheet_id
         self.CREDENTIALS_FILE = CREDENTIALS_FILE
         credentials = ServiceAccountCredentials.from_json_keyfile_name(self.CREDENTIALS_FILE,
@@ -86,35 +105,13 @@ class BugReport:
                                                                         'https://www.googleapis.com/auth/drive'])
         httpAuth = credentials.authorize(httplib2.Http())
         self.service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
-        self.initColumns()
-        self.initSheets()
-        if for_Romanovskaya:
-            self.RomanovskayaChanges()
+
 
     def getSheets(self):
         for sheet in self.service.spreadsheets().get(spreadsheetId=self.SSID).execute()["sheets"]:
             for _Sheet in self.__Sheets__:
                 if sheet["properties"]["title"] == _Sheet.Title:
                     _Sheet.ID = sheet["properties"]["sheetId"]
-
-    def getBug(self, ID):
-        range = f"A{ID + 1}:I{ID + 1}"
-        p = self.service.spreadsheets().values().get(spreadsheetId=self.SSID, range=range,
-                                                     majorDimension='ROWS').execute()["values"][0]
-        bug = Bug(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8])
-        return bug
-
-    def getLength(self, sheet):
-        values = self.service.spreadsheets().values().get(spreadsheetId=self.SSID,
-                                                          range=f"{sheet['Title']}!A2:A{self.__MaxBugs__ + 1}",
-                                                          majorDimension='COLUMNS').execute()
-        try:
-            return len(values['values'][0])
-        except:
-            return 0
-
-    def addBug(self):
-        pass
 
     def setSheets(self):
         self.getSheets()
@@ -201,25 +198,45 @@ class BugReport:
                 ]
             }
             if column.DataValidation is not None:
-                body["requests"].append({
-                    "setDataValidation": {
-                        "range": {
-                            "sheetId": sheet.ID,
-                            "startRowIndex": 1,
-                            "endRowIndex": self.__MaxBugs__ + 1,
-                            "startColumnIndex": column.ID,
-                            "endColumnIndex": column.ID + 1
-                        },
-                        "rule": {
-                            "condition": {
-                                "type": "ONE_OF_LIST",
-                                "values": column.DataValidation
+                if column.DataValidation == "Checkbox":
+                    body["requests"].append({
+                        "setDataValidation": {
+                            "range": {
+                                "sheetId": sheet.ID,
+                                "startRowIndex": 1,
+                                "endRowIndex": self.__MaxBugs__ + 1,
+                                "startColumnIndex": column.ID,
+                                "endColumnIndex": column.ID + 1
                             },
-                            "showCustomUi": True,
-                            "strict": True
+                            "rule": {
+                                "condition": {
+                                    "type": "BOOLEAN"
+                                },
+                                "showCustomUi": True,
+                                "strict": True
+                            }
                         }
-                    }
-                })
+                    })
+                else:
+                    body["requests"].append({
+                        "setDataValidation": {
+                            "range": {
+                                "sheetId": sheet.ID,
+                                "startRowIndex": 1,
+                                "endRowIndex": self.__MaxBugs__ + 1,
+                                "startColumnIndex": column.ID,
+                                "endColumnIndex": column.ID + 1
+                            },
+                            "rule": {
+                                "condition": {
+                                    "type": "ONE_OF_LIST",
+                                    "values": column.DataValidation
+                                },
+                                "showCustomUi": True,
+                                "strict": True
+                            }
+                        }
+                    })
             self.SendRequest(body)
 
     def setLineStyle(self, sheet):
@@ -254,7 +271,11 @@ class BugReport:
                 ]
             })
 
-    def doDoc(self):
+    def doDoc(self, type, for_Romanovskaya = False):
+        self.initColumns(type)
+        self.initSheets(type)
+        if for_Romanovskaya:
+            self.RomanovskayaChanges()
         self.setSheets()
         for sheet in self.__Sheets__:
             self.setHeaderStyle(sheet)
@@ -265,9 +286,10 @@ class BugReport:
             try:
                 res = self.service.spreadsheets().batchUpdate(spreadsheetId=self.SSID, body=body).execute()
                 break
-            except:
+            except Exception as e:
                 for i in range(100, 0, -1):
                     os.system("cls")
+                    print(e)
                     print("Превышен лимит ожидания")
                     print(f"Повторная отправка через {i} сек")
                     sleep(1)
@@ -284,51 +306,3 @@ def STRdict2str(STR: dict):
 
 def ind2str(ind: int):
     return chr(65 + ind)
-
-
-class Bug:
-    ID: int
-    Description: str
-    STR: dict
-    Platform: str
-    Browser: str
-    Priority: str
-    Status: str
-    Comment: str
-    Feedback: str
-
-    def __init__(self):
-        pass
-
-    def __init__(self, _ID, _Description, _STR, _Platform, _Browser, _Priority, _Status, _Comment, _Feedback):
-        self.ID = _ID
-        self.Description = _Description
-        self.STR = _STR
-        self.Platform = _Platform
-        self.Browser = _Browser
-        self.Priority = _Priority
-        self.Status = _Status
-        self.Comment = _Comment
-        self.Feedback = _Feedback
-
-    def __str__(self):
-        return f"ID = {self.ID}; Des = {self.Description}; Status: {self.Status}"
-
-    def push(self, BR: BugReport, SheetID):
-        data = [
-            [self.id, self.Description, STRdict2str(self.STR), self.Platform, self.Browser, self.Status, self.Comment]]
-        range = f"A{self.ID + 1}:H{self.ID + 1}"
-        values = BR.service.spreadsheets().values().batchUpdate(
-            spreadsheetId=SheetID,
-            body={
-                "valueInputOption": "USER_ENTERED",
-                "data": [
-                    {"range": range,
-                     "majorDimension": "ROWS",
-                     "values": [["This is B3", "This is C3"], ["This is B4", "This is C4"]]},
-                    {"range": "D5:E6",
-                     "majorDimension": "COLUMNS",
-                     "values": [["This is D5", "This is D6"], ["This is E5", "=5+5"]]}
-                ]
-            }
-        ).execute()
