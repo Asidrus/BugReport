@@ -20,7 +20,7 @@ class doDoc(argparse.Action):
 def main():
     parser = argparse.ArgumentParser(description='Script for creating templates in google sheets')
     parser.add_argument("--SSID", type=str, help="Spreadsheet ID of sheet")
-    parser.add_argument("--dd", choices=["br", "fbf"], required=False, type=str, help="--dd Do doc with name 'br'-BugReport, 'fbf'-Feedback From)")
+    parser.add_argument("--dd", choices=["br", "fbf", "times"], required=False, type=str, help="--dd Do doc with name 'br'-BugReport, 'fbf'-Feedback From)")
     # parser.add_argument("--br", action='store_true')
     # parser.add_argument("--dd", default=False, type=bool, required=False, help="Create full document", action=doDoc)
     # parser.add_argument("--a", default=1, type=int, required=False, help="This is the 'a' variable")
