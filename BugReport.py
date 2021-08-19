@@ -294,22 +294,22 @@ class BugReport:
             })
         if type == "times":
             res = self.SendRequest({
-                "requests": [{
-                    "setDataValidation": {
-                        "range": {
-                            "sheetId": sheet.ID,
-                            "startRowIndex": 2,
-                            "endRowIndex": 3,
-                        },
-                        "rule": {
-                            "condition": {
-                                "type": "BOOLEAN"
+                "requests": [
+                    {
+                        "repeatCell": {
+                            "range": {
+                                "sheetId": sheet.ID,
+                                "startRowIndex": i + 1,
+                                "endRowIndex": i + 2
                             },
-                            "showCustomUi": True,
-                            "strict": True
-                        }
-                    }
-                }]})
+                            "cell": {
+                                "userEnteredFormat": {
+                                    "NumberFormat": {"type": "DURATION"}
+                                    }
+                                }
+                            },
+                            "fields": "userEnteredFormat(NumberFormat)"
+                        }]})
 
     def doDoc(self, type, for_Romanovskaya=False):
         self.initColumns(type)
