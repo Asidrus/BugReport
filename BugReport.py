@@ -3,6 +3,7 @@ import apiclient.discovery
 from oauth2client.service_account import ServiceAccountCredentials
 from time import sleep
 import os
+from datetime import datetime
 
 
 class color:
@@ -39,11 +40,13 @@ class Sheet:
     ID: str
     Title: str
     Color = dict()
+    FR: int
 
-    def __init__(self, title, cl):
+    def __init__(self, title, cl, fr=1):
         self.Title = title
         self.Color = cl
         self.ID = None
+        self.FR = fr
 
 
 class BugReport:
@@ -63,11 +66,13 @@ class BugReport:
             self.__Columns__.append(Column(0, "ID", 30))
             self.__Columns__.append(Column(1, "Description", 350))
             self.__Columns__.append(Column(2, "STR", 230))
-            self.__Columns__.append(Column(3, "Platform", 90, ["ALL", "Desktop", "Adaptive", "Windows", "MacOS", "IOS", "Android"]))
+            self.__Columns__.append(
+                Column(3, "Platform", 90, ["ALL", "Desktop", "Adaptive", "Windows", "MacOS", "IOS", "Android"]))
             self.__Columns__.append(
                 Column(4, "Browser", 90, ["ALL", "Safari", "Google Chrome", "Yandex Chrome", "MI", "Mozila", "Opera"]))
             self.__Columns__.append(
-                Column(5, "Severity", 100, ["S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)", "S5 (trivial)"]))
+                Column(5, "Severity", 100,
+                       ["S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)", "S5 (trivial)"]))
             self.__Columns__.append(Column(6, "Status", 90, ["New", "Rejected", "Fixed", "Verified"]))
             self.__Columns__.append(Column(7, "Comment", 230))
             self.__Columns__.append(Column(8, "Feedback", 230))
@@ -84,6 +89,18 @@ class BugReport:
             self.__Columns__.append(Column(9, "Status client", 50, "Checkbox"))
             self.__Columns__.append(Column(10, "Status CRM", 50, "Checkbox"))
             self.__Columns__.append(Column(11, "Comment", 230))
+        elif type == "times":
+            self.__Columns__.append(Column(0, "DateTime", 30))
+            self.__Columns__.append(Column(1, "Страница логина", 100))
+            self.__Columns__.append(Column(2, "Страница ЛК", 100))
+            self.__Columns__.append(Column(3, "Войти в модуль", 100))
+            self.__Columns__.append(Column(4, "Лекция", 100))
+            self.__Columns__.append(Column(5, "Видео", 100))
+            self.__Columns__.append(Column(6, "Тест вопросы", 100))
+            self.__Columns__.append(Column(7, "Практическое", 100))
+            self.__Columns__.append(Column(8, "Итоговое тест", 100))
+            self.__Columns__.append(Column(9, "Страница ЛК", 100))
+            self.__Columns__.append(Column(10, "Календарь", 100))
 
     def initSheets(self, type):
         if type == "br":
@@ -92,9 +109,14 @@ class BugReport:
             self.__Sheets__.append(Sheet("Design/Content", color.Green))
         elif type == "fbf":
             self.__Sheets__.append(Sheet("Niidpo", color.Red))
+        elif type == "time":
+            for i in range(30):
+                self.__Sheets__.append(f"{i + 1}", color.White, FR=2)
 
     def RomanovskayaChanges(self):
-        self.__Columns__[5] = Column(5, "Severity", 100, ["S0 (Simple)", "S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)", "S5 (trivial)"])
+        self.__Columns__[5] = Column(5, "Severity", 100,
+                                     ["S0 (Simple)", "S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)",
+                                      "S5 (trivial)"])
         self.__Columns__[6] = Column(6, "Status", 90, ["New", "Rejected", "Fixed", "Verified", "Check"])
 
     def __init__(self, spreadsheet_id, CREDENTIALS_FILE='stable-ring-316114-8acf36454762.json'):
@@ -106,14 +128,13 @@ class BugReport:
         httpAuth = credentials.authorize(httplib2.Http())
         self.service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
 
-
     def getSheets(self):
         for sheet in self.service.spreadsheets().get(spreadsheetId=self.SSID).execute()["sheets"]:
             for _Sheet in self.__Sheets__:
                 if sheet["properties"]["title"] == _Sheet.Title:
                     _Sheet.ID = sheet["properties"]["sheetId"]
 
-    def setSheets(self):
+    def setSheets(self, type):
         self.getSheets()
         for sheet in self.__Sheets__:
             if sheet.ID is None:
@@ -135,13 +156,14 @@ class BugReport:
                 })
         self.getSheets()
 
-    def setHeaderStyle(self, sheet):
+    def setHeaderStyle(self, sheet, type):
         # titles
         res = self.service.spreadsheets().values().update(spreadsheetId=self.SSID,
                                                           range=f"{sheet.Title}!A1:{ind2str(len(self.__Columns__))}1",
                                                           valueInputOption="USER_ENTERED",
                                                           body={"values": [
                                                               [column.Title for column in self.__Columns__]]}).execute()
+
         # backgroundColor, textFormat, horizontalAlignment
         res = self.SendRequest({
             "requests": [
@@ -170,14 +192,14 @@ class BugReport:
                     "updateSheetProperties": {
                         "properties": {
                             "sheetId": sheet.ID,
-                            "gridProperties": {"frozenRowCount": 1}
+                            "gridProperties": {"frozenRowCount": sheet.FR}
                         },
                         "fields": "gridProperties.frozenRowCount"
                     }
                 }
             ]
         })
-        # width,datavalidation
+        # width, datavalidation
         for column in self.__Columns__:
             body = {
                 "requests": [
@@ -239,7 +261,7 @@ class BugReport:
                     })
             self.SendRequest(body)
 
-    def setLineStyle(self, sheet):
+    def setLineStyle(self, sheet, type):
         # lines
         for i in range(self.__MaxBugs__):
             color = self.__LinesColor__[i % 2]
@@ -270,16 +292,34 @@ class BugReport:
                     },
                 ]
             })
+        if type == "times":
+            res = self.SendRequest({
+                "requests": [{
+                    "setDataValidation": {
+                        "range": {
+                            "sheetId": sheet.ID,
+                            "startRowIndex": 2,
+                            "endRowIndex": 3,
+                        },
+                        "rule": {
+                            "condition": {
+                                "type": "BOOLEAN"
+                            },
+                            "showCustomUi": True,
+                            "strict": True
+                        }
+                    }
+                }]})
 
-    def doDoc(self, type, for_Romanovskaya = False):
+    def doDoc(self, type, for_Romanovskaya=False):
         self.initColumns(type)
         self.initSheets(type)
         if for_Romanovskaya:
             self.RomanovskayaChanges()
-        self.setSheets()
+        self.setSheets(type)
         for sheet in self.__Sheets__:
-            self.setHeaderStyle(sheet)
-            self.setLineStyle(sheet)
+            self.setHeaderStyle(sheet, type)
+            self.setLineStyle(sheet, type)
 
     def SendRequest(self, body):
         while True:
