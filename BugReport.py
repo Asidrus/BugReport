@@ -112,7 +112,7 @@ class BugReport:
         elif type == "fbf":
             self.__Sheets__.append(Sheet("Niidpo", color.Red))
         elif type == "times":
-            for i in range(30):
+            for i in range(31):
                 self.__Sheets__.append(Sheet(f"{i + 1}", color.White, fr=2))
 
     def RomanovskayaChanges(self):
@@ -449,6 +449,8 @@ class BugReport:
                     }}]})
 
     def doDoc(self, type, for_Romanovskaya=False):
+        if type == "times":
+            self.__MaxBugs__ = int(2+60/10*24)
         self.initColumns(type)
         self.initSheets(type)
         if for_Romanovskaya:
