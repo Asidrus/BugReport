@@ -382,6 +382,42 @@ class BugReport:
                                                           body={"values": lines}).execute()
 
     def setLineStyle(self, sheet, type):
+        if type == "times":
+            self.SendRequest({
+                "requests": [
+                    {
+                        "repeatCell": {
+                            "range": {
+                                "sheetId": sheet.ID,
+                                "startRowIndex": 2,
+                                "endRowIndex": self.__MaxBugs__,
+                                "startColumnIndex": 1,
+                                "endColumnIndex": len(self.__Columns__)
+                            },
+                            "cell": {
+                                "userEnteredFormat": {
+                                    "numberFormat": {"type": "TIME", "pattern": "00:00:00"}
+                                }
+                            },
+                            "fields": "userEnteredFormat(numberFormat)"
+                        }}]})
+            self.SendRequest({
+                "requests": [
+                    {
+                        "repeatCell": {
+                            "range": {
+                                "sheetId": sheet.ID,
+                                "startColumnIndex": 0,
+                                "endColumnIndex": 1
+                            },
+                            "cell": {
+                                "userEnteredFormat": {
+                                    "numberFormat": {"type": "DATE_TIME"}
+                                }
+                            },
+                            "fields": "userEnteredFormat(numberFormat)"
+                        }}]})
+            return 1
         # lines
         for i in range(self.__MaxBugs__):
             color = self.__LinesColor__[i % 2]
@@ -412,45 +448,10 @@ class BugReport:
                     },
                 ]
             })
-            if type == "times":
-                self.SendRequest({
-                    "requests": [
-                        {
-                            "repeatCell": {
-                                "range": {
-                                    "sheetId": sheet.ID,
-                                    "startRowIndex": i + 1,
-                                    "endRowIndex": i + 2,
-                                    "startColumnIndex": 1,
-                                    "endColumnIndex": len(self.__Columns__)
-                                },
-                                "cell": {
-                                    "userEnteredFormat": {
-                                        "numberFormat": {"type": "TIME", "pattern": "00:00:00"}
-                                    }
-                                },
-                                "fields": "userEnteredFormat(numberFormat)"
-                            }}]})
-        self.SendRequest({
-            "requests": [
-                {
-                    "repeatCell": {
-                        "range": {
-                            "sheetId": sheet.ID,
-                            "startColumnIndex": 0,
-                            "endColumnIndex": 1
-                        },
-                        "cell": {
-                            "userEnteredFormat": {
-                                "numberFormat": {"type": "DATE_TIME"}
-                            }
-                        },
-                        "fields": "userEnteredFormat(numberFormat)"
-                    }}]})
 
     def doDoc(self, type, for_Romanovskaya=False):
         if type == "times":
-            self.__MaxBugs__ = int(2+60/10*24)
+            self.__MaxBugs__ = int(2 + 60 / 10 * 24)
         self.initColumns(type)
         self.initSheets(type)
         if for_Romanovskaya:
