@@ -38,4 +38,5 @@ if __name__ == '__main__':
 
     br = BugReport(spreadsheet_id=args.SSID)
     if args.dd:
+        print("start doing")
         br.doDoc(type=args.dd, for_Romanovskaya=False)

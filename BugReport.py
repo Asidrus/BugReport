@@ -90,17 +90,17 @@ class BugReport:
             self.__Columns__.append(Column(10, "Status CRM", 50, "Checkbox"))
             self.__Columns__.append(Column(11, "Comment", 230))
         elif type == "times":
-            self.__Columns__.append(Column(0, "DateTime", 30))
-            self.__Columns__.append(Column(1, "Страница логина", 100))
-            self.__Columns__.append(Column(2, "Страница ЛК", 100))
-            self.__Columns__.append(Column(3, "Войти в модуль", 100))
-            self.__Columns__.append(Column(4, "Лекция", 100))
-            self.__Columns__.append(Column(5, "Видео", 100))
-            self.__Columns__.append(Column(6, "Тест вопросы", 100))
-            self.__Columns__.append(Column(7, "Практическое", 100))
-            self.__Columns__.append(Column(8, "Итоговое тест", 100))
-            self.__Columns__.append(Column(9, "Страница ЛК", 100))
-            self.__Columns__.append(Column(10, "Календарь", 100))
+            self.__Columns__.append(Column(0, "DateTime", 150))
+            self.__Columns__.append(Column(1, "Страница логина", 150))
+            self.__Columns__.append(Column(2, "Страница ЛК", 150))
+            self.__Columns__.append(Column(3, "Войти в модуль", 150))
+            self.__Columns__.append(Column(4, "Лекция", 150))
+            self.__Columns__.append(Column(5, "Видео", 150))
+            self.__Columns__.append(Column(6, "Тест вопросы", 150))
+            self.__Columns__.append(Column(7, "Практическое", 150))
+            self.__Columns__.append(Column(8, "Итоговое тест", 150))
+            self.__Columns__.append(Column(9, "Страница ЛК", 150))
+            self.__Columns__.append(Column(10, "Календарь", 150))
 
     def initSheets(self, type):
         if type == "br":
@@ -109,9 +109,9 @@ class BugReport:
             self.__Sheets__.append(Sheet("Design/Content", color.Green))
         elif type == "fbf":
             self.__Sheets__.append(Sheet("Niidpo", color.Red))
-        elif type == "time":
+        elif type == "times":
             for i in range(30):
-                self.__Sheets__.append(f"{i + 1}", color.White, FR=2)
+                self.__Sheets__.append(Sheet(f"{i + 1}", color.White, fr=2))
 
     def RomanovskayaChanges(self):
         self.__Columns__[5] = Column(5, "Severity", 100,
@@ -138,7 +138,7 @@ class BugReport:
         self.getSheets()
         for sheet in self.__Sheets__:
             if sheet.ID is None:
-                res = self.SendRequest({
+                self.SendRequest({
                     "requests": [
                         {
                             "addSheet": {
@@ -165,14 +165,14 @@ class BugReport:
                                                               [column.Title for column in self.__Columns__]]}).execute()
 
         # backgroundColor, textFormat, horizontalAlignment
-        res = self.SendRequest({
+        self.SendRequest({
             "requests": [
                 {
                     "repeatCell": {
                         "range": {
                             "sheetId": sheet.ID,
                             "startRowIndex": 0,
-                            "endRowIndex": 1
+                            "endRowIndex": sheet.FR
                         },
                         "cell": {
                             "userEnteredFormat": {
@@ -259,13 +259,122 @@ class BugReport:
                             }
                         }
                     })
-            self.SendRequest(body)
+            self.SendRequest(body={
+                "requests": [
+                    {
+                        "setDataValidation": {
+                            "range": {
+                                "sheetId": sheet.ID,
+                                "startRowIndex": 1,
+                                "endRowIndex": 2
+                            },
+                            "rule": {
+                                "condition": {
+                                    "type": "BOOLEAN"
+                                },
+                                "showCustomUi": True,
+                                "strict": True
+                            }
+                        }
+                    }
+                ]})
+
+    def addGraph(self, sheet):
+        series = []
+        for i in range(1, len(self.__Columns__)):
+            series.append({
+                "series": {
+                    "sourceRange": {
+                        "sources": [
+                            {
+                                "sheetId": sheet.ID,
+                                "startRowIndex": 0,
+                                "endRowIndex": self.__MaxBugs__,
+                                "startColumnIndex": i,
+                                "endColumnIndex": i + 1
+                            }
+                        ]
+                    }
+                },
+                "targetAxis": "LEFT_AXIS"
+            })
+        res = self.SendRequest(body={
+            "requests": [
+                {
+                    "addChart": {
+                        "chart": {
+                            "spec": {
+                                "title": f"Graphics of {sheet.Title}'th day",
+                                "basicChart": {
+                                    "chartType": "LINE",
+                                    "legendPosition": "BOTTOM_LEGEND",
+                                    "axis": [
+                                        {
+                                            "position": "BOTTOM_AXIS",
+                                            "title": "DateTime"
+                                        },
+                                        {
+                                            "position": "LEFT_AXIS",
+                                            "title": "Time"
+                                        }
+                                    ],
+                                    "domains": [
+                                        {
+                                            "domain": {
+                                                "sourceRange": {
+                                                    "sources": [
+                                                        {
+                                                            "sheetId": sheet.ID,
+                                                            "startRowIndex": 0,
+                                                            "endRowIndex": self.__MaxBugs__,
+                                                            "startColumnIndex": 0,
+                                                            "endColumnIndex": 1
+                                                        }
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "series": series,
+                                    "headerCount": 1
+                                }
+                            },
+                            "position": {
+                                "overlayPosition": {
+                                    "anchorCell": {
+                                        "sheetId": sheet.ID,
+                                        "rowIndex": 0,
+                                        "columnIndex": 0
+                                    },
+                                    "offsetXPixels": 0,
+                                    "offsetYPixels": 0,
+                                    "widthPixels": 1200,
+                                    "heightPixels": 640
+                                }
+                            }
+                        }
+                    }
+                }
+            ]
+        })
+
+    def addData(self, sheet, lines):
+        raw = self.service.spreadsheets().values().get(spreadsheetId=self.SSID,
+                                                  range=f"{sheet.Title}!A1:{ind2str(self.__Columns__)}{self.__MaxBugs__}",
+                                                  majorDimension='ROWS').execute()["values"]
+        ind = len(raw)
+        res = self.service.spreadsheets().values().update(spreadsheetId=self.SSID,
+                                                          range=f"{sheet.Title}!A{ind}:{ind2str(self.__Columns__)}{ind+len(lines)}",
+                                                          valueInputOption="USER_ENTERED",
+                                                          body={"values": [
+                                                              [column.Title for column in self.__Columns__]]}).execute()
+
 
     def setLineStyle(self, sheet, type):
         # lines
         for i in range(self.__MaxBugs__):
             color = self.__LinesColor__[i % 2]
-            res = self.SendRequest({
+            self.SendRequest({
                 "requests": [
                     {
                         "repeatCell": {
@@ -292,24 +401,41 @@ class BugReport:
                     },
                 ]
             })
-        if type == "times":
-            res = self.SendRequest({
-                "requests": [
-                    {
-                        "repeatCell": {
-                            "range": {
-                                "sheetId": sheet.ID,
-                                "startRowIndex": i + 1,
-                                "endRowIndex": i + 2
-                            },
-                            "cell": {
-                                "userEnteredFormat": {
-                                    "NumberFormat": {"type": "DURATION"}
+            if type == "times":
+                self.SendRequest({
+                    "requests": [
+                        {
+                            "repeatCell": {
+                                "range": {
+                                    "sheetId": sheet.ID,
+                                    "startRowIndex": i + 1,
+                                    "endRowIndex": i + 2,
+                                    "startColumnIndex": 1,
+                                    "endColumnIndex": len(self.__Columns__)
+                                },
+                                "cell": {
+                                    "userEnteredFormat": {
+                                        "numberFormat": {"type": "TIME", "pattern": "00:00:00"}
                                     }
-                                }
-                            },
-                            "fields": "userEnteredFormat(NumberFormat)"
-                        }]})
+                                },
+                                "fields": "userEnteredFormat(numberFormat)"
+                            }}]})
+        self.SendRequest({
+            "requests": [
+                {
+                    "repeatCell": {
+                        "range": {
+                            "sheetId": sheet.ID,
+                            "startColumnIndex": 0,
+                            "endColumnIndex": 1
+                        },
+                        "cell": {
+                            "userEnteredFormat": {
+                                "numberFormat": {"type": "DATE_TIME"}
+                            }
+                        },
+                        "fields": "userEnteredFormat(numberFormat)"
+                    }}]})
 
     def doDoc(self, type, for_Romanovskaya=False):
         self.initColumns(type)
@@ -318,10 +444,12 @@ class BugReport:
             self.RomanovskayaChanges()
         self.setSheets(type)
         for sheet in self.__Sheets__:
+            self.addGraph(sheet)
             self.setHeaderStyle(sheet, type)
             self.setLineStyle(sheet, type)
 
     def SendRequest(self, body):
+        # res = self.service.spreadsheets().batchUpdate(spreadsheetId=self.SSID, body=body).execute()
         while True:
             try:
                 res = self.service.spreadsheets().batchUpdate(spreadsheetId=self.SSID, body=body).execute()
