@@ -5,6 +5,8 @@ from time import sleep
 import os
 from datetime import datetime
 
+ind2str = lambda ind: chr(65 + ind)
+
 
 class color:
     White = {"red": 1, "green": 1, "blue": 1}
@@ -358,17 +360,26 @@ class BugReport:
             ]
         })
 
-    def addData(self, sheet, lines):
+    def addData(self, sheet, data):
         raw = self.service.spreadsheets().values().get(spreadsheetId=self.SSID,
-                                                  range=f"{sheet.Title}!A1:{ind2str(self.__Columns__)}{self.__MaxBugs__}",
-                                                  majorDimension='ROWS').execute()["values"]
-        ind = len(raw)
-        res = self.service.spreadsheets().values().update(spreadsheetId=self.SSID,
-                                                          range=f"{sheet.Title}!A{ind}:{ind2str(self.__Columns__)}{ind+len(lines)}",
-                                                          valueInputOption="USER_ENTERED",
-                                                          body={"values": [
-                                                              [column.Title for column in self.__Columns__]]}).execute()
+                                                       range=f"{sheet.Title}!A1:{ind2str(len(self.__Columns__))}{self.__MaxBugs__}",
+                                                       majorDimension='ROWS').execute()["values"]
+        ind = len(raw) + 1
+        cover = lambda t, l: f"=if({l}2,1,0)*\"{t}\""
+        lines = []
+        for dat in data:
+            line = []
+            for i in range(len(dat)):
+                if i == 0:
+                    line.append(dat[i])
+                    continue
+                line.append(cover(dat[i], ind2str(i)))
+            lines.append(line)
 
+        res = self.service.spreadsheets().values().update(spreadsheetId=self.SSID,
+                                                          range=f"{sheet.Title}!A{ind}:{ind2str(len(lines[0]))}{ind + len(lines)}",
+                                                          valueInputOption="USER_ENTERED",
+                                                          body={"values": lines}).execute()
 
     def setLineStyle(self, sheet, type):
         # lines
@@ -470,7 +481,3 @@ def STRdict2str(STR: dict):
         res = res + """
         """ + index + ". " + STR[index]
     return res
-
-
-def ind2str(ind: int):
-    return chr(65 + ind)
