@@ -3,6 +3,8 @@ import apiclient.discovery
 from oauth2client.service_account import ServiceAccountCredentials
 from time import sleep
 import os
+from Sheet import Sheet
+from Column import Column
 from datetime import datetime
 
 ind2str = lambda ind: chr(65 + ind)
@@ -17,38 +19,6 @@ class color:
     Blue = {"red": 0, "green": 0, "blue": 1}
     Cyan = {"red": 0, "green": 1, "blue": 1}
     Yellow = {"red": 1, "green": 1, "blue": 0}
-
-
-class Column:
-    ID: int
-    Title: str
-    Width: int
-    DataValidation = None
-
-    def __init__(self, id, title, width, datavalidation=None):
-        self.ID = id
-        self.Title = title
-        self.Width = width
-        if datavalidation is not None:
-            if datavalidation == "Checkbox":
-                self.DataValidation = datavalidation
-            else:
-                self.DataValidation = list()
-                for data in datavalidation:
-                    self.DataValidation.append({"userEnteredValue": data})
-
-
-class Sheet:
-    ID: str
-    Title: str
-    Color = dict()
-    FR: int
-
-    def __init__(self, title, cl, fr=1):
-        self.Title = title
-        self.Color = cl
-        self.ID = None
-        self.FR = fr
 
 
 class BugReport:
@@ -160,12 +130,8 @@ class BugReport:
 
     def setHeaderStyle(self, sheet, type):
         # titles
-        res = self.service.spreadsheets().values().update(spreadsheetId=self.SSID,
-                                                          range=f"{sheet.Title}!A1:{ind2str(len(self.__Columns__))}1",
-                                                          valueInputOption="USER_ENTERED",
-                                                          body={"values": [
-                                                              [column.Title for column in self.__Columns__]]}).execute()
-
+        self.UpdateValue(range=f"{sheet.Title}!A1:{ind2str(len(self.__Columns__))}1",
+                         values=[[column.Title for column in self.__Columns__]])
         # backgroundColor, textFormat, horizontalAlignment
         self.SendRequest({
             "requests": [
@@ -261,6 +227,7 @@ class BugReport:
                             }
                         }
                     })
+            self.SendRequest(body=body)
             self.SendRequest(body={
                 "requests": [
                     {
@@ -458,12 +425,11 @@ class BugReport:
             self.RomanovskayaChanges()
         self.setSheets(type)
         for sheet in self.__Sheets__:
-            self.addGraph(sheet)
+            #self.addGraph(sheet)
             self.setHeaderStyle(sheet, type)
             self.setLineStyle(sheet, type)
 
     def SendRequest(self, body):
-        # res = self.service.spreadsheets().batchUpdate(spreadsheetId=self.SSID, body=body).execute()
         while True:
             try:
                 res = self.service.spreadsheets().batchUpdate(spreadsheetId=self.SSID, body=body).execute()
@@ -477,6 +443,25 @@ class BugReport:
                     sleep(1)
         return res
 
+    def GetValue(self):
+        pass
+
+    def UpdateValue(self, range, values):
+        while True:
+            try:
+                res = self.service.spreadsheets().values().update(spreadsheetId=self.SSID,
+                                                                  range=range,
+                                                                  valueInputOption="USER_ENTERED",
+                                                                  body={"values": values}).execute()
+                break
+            except Exception as e:
+                for i in range(100, 0, -1):
+                    os.system("clear")
+                    print(e)
+                    print("Превышен лимит ожидания")
+                    print(f"Повторная отправка через {i} сек")
+                    sleep(1)
+        return res
 
 def STRdict2str(STR: dict):
     res = """"""
