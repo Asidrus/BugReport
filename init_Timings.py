@@ -15,15 +15,9 @@ def initSheets():
 
 
 def initColumns():
-    Columns = [Column(0, "ID", 30),
-               Column(1, "Description", 350),
-               Column(2, "STR", 230),
-               Column(3, "Platform", 90, ["ALL", "Desktop", "Adaptive", "Windows", "MacOS", "IOS", "Android"]),
-               Column(4, "Browser", 90, ["ALL", "Safari", "Google Chrome", "Yandex Chrome", "MI", "Mozila", "Opera"]),
-               Column(5, "Severity", 100,
-                      ["S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)", "S5 (trivial)"]),
-               Column(6, "Status", 90, ["New", "Rejected", "Fixed", "Verified"]),
-               Column(7, "Comment", 230),
-               Column(8, "Feedback", 230)]
+    Columns = [Column(0, "DateTime", 150), Column(1, "Страница логина", 150), Column(2, "Редирект", 150),
+               Column(3, "Страница ЛК", 150), Column(4, "Войти в модуль", 150), Column(5, "Лекция", 150),
+               Column(6, "Видео", 150), Column(7, "Тест вопросы", 150), Column(8, "Практическое", 150),
+               Column(9, "Итоговое тест", 150), Column(10, "Страница ЛК", 150), Column(11, "Календарь", 150)]
     return Columns
 

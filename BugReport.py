@@ -64,15 +64,16 @@ class BugReport:
         elif type == "times":
             self.__Columns__.append(Column(0, "DateTime", 150))
             self.__Columns__.append(Column(1, "Страница логина", 150))
-            self.__Columns__.append(Column(2, "Страница ЛК", 150))
-            self.__Columns__.append(Column(3, "Войти в модуль", 150))
-            self.__Columns__.append(Column(4, "Лекция", 150))
-            self.__Columns__.append(Column(5, "Видео", 150))
-            self.__Columns__.append(Column(6, "Тест вопросы", 150))
-            self.__Columns__.append(Column(7, "Практическое", 150))
-            self.__Columns__.append(Column(8, "Итоговое тест", 150))
-            self.__Columns__.append(Column(9, "Страница ЛК", 150))
-            self.__Columns__.append(Column(10, "Календарь", 150))
+            self.__Columns__.append(Column(2, "Редирект", 150))
+            self.__Columns__.append(Column(3, "Страница ЛК", 150))
+            self.__Columns__.append(Column(4, "Войти в модуль", 150))
+            self.__Columns__.append(Column(5, "Лекция", 150))
+            self.__Columns__.append(Column(6, "Видео", 150))
+            self.__Columns__.append(Column(7, "Тест вопросы", 150))
+            self.__Columns__.append(Column(8, "Практическое", 150))
+            self.__Columns__.append(Column(9, "Итоговое тест", 150))
+            self.__Columns__.append(Column(10, "Страница ЛК", 150))
+            self.__Columns__.append(Column(11, "Календарь", 150))
 
     def initSheets(self, type):
         if type == "br":
@@ -425,7 +426,7 @@ class BugReport:
             self.RomanovskayaChanges()
         self.setSheets(type)
         for sheet in self.__Sheets__:
-            #self.addGraph(sheet)
+            self.addGraph(sheet)
             self.setHeaderStyle(sheet, type)
             self.setLineStyle(sheet, type)
 
