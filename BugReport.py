@@ -363,7 +363,7 @@ class BugReport:
                             },
                             "cell": {
                                 "userEnteredFormat": {
-                                    "numberFormat": {"type": "TIME", "pattern": "00:00:00"}
+                                    "numberFormat": {"type": "TIME", "pattern": "[hh]:mm:ss"}
                                 }
                             },
                             "fields": "userEnteredFormat(numberFormat)"
