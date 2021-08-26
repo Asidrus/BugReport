@@ -15,14 +15,48 @@ def main():
 
 def test():
     from  datetime import datetime
-    br = BugReport(spreadsheet_id='1cwMf4h8dANH6_sTIIfVR3cV04jWOt0lYZw2Nx9FgxoE')
-    mm = lambda t, l: f"=if({l}2,1,0)*\"{t}\""
+    br = BugReport(spreadsheet_id='1u88yKDi46j1AjpSxVr2tp1sdt1oKyCzoLkSXZ99cGh4')
+
     data = [[str(datetime.now()), '00:05:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01'],
             [str(datetime.now()), '00:06:01', '00:05:01', '00:05:01', '00:05:01', '00:02:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01', '00:05:01']]
 
     br.initColumns("times")
     br.initSheets("times")
     br.getSheets()
+    br.SendRequest({
+        "requests": [
+            {
+                "repeatCell": {
+                    "range": {
+                        "sheetId": br.__Sheets__[0].ID,
+                        "startRowIndex": 2,
+                        "endRowIndex": br.__MaxBugs__,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": len(br.__Columns__)
+                    },
+                    "cell": {
+                        "userEnteredFormat": {
+                            "numberFormat": {"type": "TIME", "pattern": "[hh]:mm:ss"}
+                        }
+                    },
+                    "fields": "userEnteredFormat(numberFormat)"
+                }}]})
+    br.SendRequest({
+        "requests": [
+            {
+                "repeatCell": {
+                    "range": {
+                        "sheetId": br.__Sheets__[0].ID,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": 1
+                    },
+                    "cell": {
+                        "userEnteredFormat": {
+                            "numberFormat": {"type": "DATE_TIME"}
+                        }
+                    },
+                    "fields": "userEnteredFormat(numberFormat)"
+                }}]})
     br.addData(br.__Sheets__[0], data)
 
 if __name__ == '__main__':

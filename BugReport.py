@@ -6,85 +6,76 @@ import os
 from Sheet import Sheet
 from Column import Column
 from datetime import datetime
+from Color import Color
 
 ind2str = lambda ind: chr(65 + ind)
-
-
-class color:
-    White = {"red": 1, "green": 1, "blue": 1}
-    Black = {"red": 0, "green": 0, "blue": 0}
-    LightGray = {"red": 0.95, "green": 0.95, "blue": 0.95}
-    Red = {"red": 1, "green": 0, "blue": 0}
-    Green = {"red": 0, "green": 1, "blue": 0}
-    Blue = {"red": 0, "green": 0, "blue": 1}
-    Cyan = {"red": 0, "green": 1, "blue": 1}
-    Yellow = {"red": 1, "green": 1, "blue": 0}
-
 
 class BugReport:
     __MaxBugs__ = 50
     __Columns__ = list()
     __Sheets__ = list()
-    __HeaderColor__ = color.Cyan
-    __LinesColor__ = {0: {"fore": color.Black, "back": color.White},
-                      1: {"fore": color.Black, "back": color.LightGray}}
+    __HeaderColor__ = Color.Cyan
+    __LinesColor__ = {0: {"fore": Color.Black, "back": Color.White},
+                      1: {"fore": Color.Black, "back": Color.LightGray}}
 
     SSID: str
     CREDENTIALS_FILE: str
     ServiceAccount = 'acc-340@stable-ring-316114.iam.gserviceaccount.com'
 
     def initColumns(self, type):
-        if type == "br":
-            self.__Columns__.append(Column(0, "ID", 30))
-            self.__Columns__.append(Column(1, "Description", 350))
-            self.__Columns__.append(Column(2, "STR", 230))
-            self.__Columns__.append(
-                Column(3, "Platform", 90, ["ALL", "Desktop", "Adaptive", "Windows", "MacOS", "IOS", "Android"]))
-            self.__Columns__.append(
-                Column(4, "Browser", 90, ["ALL", "Safari", "Google Chrome", "Yandex Chrome", "MI", "Mozila", "Opera"]))
-            self.__Columns__.append(
-                Column(5, "Severity", 100,
-                       ["S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)", "S5 (trivial)"]))
-            self.__Columns__.append(Column(6, "Status", 90, ["New", "Rejected", "Fixed", "Verified"]))
-            self.__Columns__.append(Column(7, "Comment", 230))
-            self.__Columns__.append(Column(8, "Feedback", 230))
-        elif type == "fbf":
-            self.__Columns__.append(Column(0, "ID", 30))
-            self.__Columns__.append(Column(1, "", 30))
-            self.__Columns__.append(Column(2, "Description", 230))
-            self.__Columns__.append(Column(3, "Link", 120))
-            self.__Columns__.append(Column(4, "Name", 90))
-            self.__Columns__.append(Column(5, "Phone", 90))
-            self.__Columns__.append(Column(6, "Email", 90))
-            self.__Columns__.append(Column(7, "Platform", 90, ["Desktop", "IOS", "Android"]))
-            self.__Columns__.append(Column(8, "Request time", 100))
-            self.__Columns__.append(Column(9, "Status client", 50, "Checkbox"))
-            self.__Columns__.append(Column(10, "Status CRM", 50, "Checkbox"))
-            self.__Columns__.append(Column(11, "Comment", 230))
-        elif type == "times":
-            self.__Columns__.append(Column(0, "DateTime", 150))
-            self.__Columns__.append(Column(1, "Страница логина", 150))
-            self.__Columns__.append(Column(2, "Редирект", 150))
-            self.__Columns__.append(Column(3, "Страница ЛК", 150))
-            self.__Columns__.append(Column(4, "Войти в модуль", 150))
-            self.__Columns__.append(Column(5, "Лекция", 150))
-            self.__Columns__.append(Column(6, "Видео", 150))
-            self.__Columns__.append(Column(7, "Тест вопросы", 150))
-            self.__Columns__.append(Column(8, "Практическое", 150))
-            self.__Columns__.append(Column(9, "Итоговое тест", 150))
-            self.__Columns__.append(Column(10, "Страница ЛК", 150))
-            self.__Columns__.append(Column(11, "Календарь", 150))
+        # if type == "br":
+        #     self.__Columns__.append(Column(0, "ID", 30))
+        #     self.__Columns__.append(Column(1, "Description", 350))
+        #     self.__Columns__.append(Column(2, "STR", 230))
+        #     self.__Columns__.append(
+        #         Column(3, "Platform", 90, ["ALL", "Desktop", "Adaptive", "Windows", "MacOS", "IOS", "Android"]))
+        #     self.__Columns__.append(
+        #         Column(4, "Browser", 90, ["ALL", "Safari", "Google Chrome", "Yandex Chrome", "MI", "Mozila", "Opera"]))
+        #     self.__Columns__.append(
+        #         Column(5, "Severity", 100,
+        #                ["S1 (blocker)", "S2 (critical)", "S3 (major)", "S4 (minor)", "S5 (trivial)"]))
+        #     self.__Columns__.append(Column(6, "Status", 90, ["New", "Rejected", "Fixed", "Verified"]))
+        #     self.__Columns__.append(Column(7, "Comment", 230))
+        #     self.__Columns__.append(Column(8, "Feedback", 230))
+        # elif type == "fbf":
+        #     self.__Columns__.append(Column(0, "ID", 30))
+        #     self.__Columns__.append(Column(1, "", 30))
+        #     self.__Columns__.append(Column(2, "Description", 230))
+        #     self.__Columns__.append(Column(3, "Link", 120))
+        #     self.__Columns__.append(Column(4, "Name", 90))
+        #     self.__Columns__.append(Column(5, "Phone", 90))
+        #     self.__Columns__.append(Column(6, "Email", 90))
+        #     self.__Columns__.append(Column(7, "Platform", 90, ["Desktop", "IOS", "Android"]))
+        #     self.__Columns__.append(Column(8, "Request time", 100))
+        #     self.__Columns__.append(Column(9, "Status client", 50, "Checkbox"))
+        #     self.__Columns__.append(Column(10, "Status CRM", 50, "Checkbox"))
+        #     self.__Columns__.append(Column(11, "Comment", 230))
+        # elif type == "times":
+        #     self.__Columns__.append(Column(0, "DateTime", 150))
+        #     self.__Columns__.append(Column(1, "Страница логина", 150))
+        #     self.__Columns__.append(Column(2, "Редирект", 150))
+        #     self.__Columns__.append(Column(3, "Страница ЛК", 150))
+        #     self.__Columns__.append(Column(4, "Войти в модуль", 150))
+        #     self.__Columns__.append(Column(5, "Лекция", 150))
+        #     self.__Columns__.append(Column(6, "Видео", 150))
+        #     self.__Columns__.append(Column(7, "Тест вопросы", 150))
+        #     self.__Columns__.append(Column(8, "Практическое", 150))
+        #     self.__Columns__.append(Column(9, "Итоговое тест", 150))
+        #     self.__Columns__.append(Column(10, "Страница ЛК", 150))
+        #     self.__Columns__.append(Column(11, "Календарь", 150))
+        if type == "BR":
+
 
     def initSheets(self, type):
         if type == "br":
-            self.__Sheets__.append(Sheet("Func", color.Red))
-            self.__Sheets__.append(Sheet("Layout", color.Yellow))
-            self.__Sheets__.append(Sheet("Design/Content", color.Green))
+            self.__Sheets__.append(Sheet("Func", Color.Red))
+            self.__Sheets__.append(Sheet("Layout", Color.Yellow))
+            self.__Sheets__.append(Sheet("Design/Content", Color.Green))
         elif type == "fbf":
-            self.__Sheets__.append(Sheet("Niidpo", color.Red))
+            self.__Sheets__.append(Sheet("Niidpo", Color.Red))
         elif type == "times":
             for i in range(31):
-                self.__Sheets__.append(Sheet(f"{i + 1}", color.White, fr=2))
+                self.__Sheets__.append(Sheet(f"{i + 1}", Color.White, fr=2))
 
     def RomanovskayaChanges(self):
         self.__Columns__[5] = Column(5, "Severity", 100,
@@ -148,7 +139,7 @@ class BugReport:
                                 "backgroundColor": self.__HeaderColor__,
                                 "horizontalAlignment": "CENTER",
                                 "textFormat": {
-                                    "foregroundColor": color.Black,
+                                    "foregroundColor": Color.Black,
                                     "fontSize": 12,
                                     "bold": True
                                 }
