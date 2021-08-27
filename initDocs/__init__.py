@@ -1,8 +1,11 @@
 import initDocs.init_BugReport as BR
+import initDocs.init_Timings as TIMINGS
+import initDocs.init_FeedbackForm as FBF
 
-def __init__(typeOfDoc):
-    # cases = {"BugReport": init_BugReport.initSheets,
-    #          "Timings": init_Timings.initDoc}
-    # cases = {"BugReport": BR.initSheets}
 
-    return BR.initSheets()
+def init(typeOfDoc):
+    cases = {"BugReport": BR,
+             "Timings": TIMINGS,
+             "FeedbackForm": FBF}
+
+    return cases[typeOfDoc].initDoc()
