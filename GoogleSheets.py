@@ -11,7 +11,7 @@ ind2str = lambda ind: chr(65 + ind)
 path = os.path.abspath(os.getcwd())
 
 
-class BugReport:
+class GoogleSheets:
     __Sheets__ = list()
     SSID: str
     CREDENTIALS_FILE: str

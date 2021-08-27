@@ -1,7 +1,8 @@
 from GoogleSheets import *
-import json
-import sys
 import argparse
+import os
+
+path = os.path.abspath(os.getcwd())
 
 
 def main():
@@ -10,11 +11,11 @@ def main():
     parser.add_argument("--dd", choices=["BugReport", "FeedbackForm", "Timings"], required=False, type=str,
                         help="--dd Do doc")
     args = parser.parse_args()
-    br = BugReport(SSID=args.SSID,
-                   typeOfDoc=args.dd,
-                   CREDENTIALS_FILE="/home/kali/python/BugReport/stable-ring-316114-8acf36454762.json")
+    GSh = GoogleSheets(SSID=args.SSID,
+                      typeOfDoc=args.dd,
+                      CREDENTIALS_FILE=path + "/stable-ring-316114-8acf36454762.json")
     if args.dd:
-        br.doDoc()
+        GSh.doDoc()
 
 
 if __name__ == '__main__':
