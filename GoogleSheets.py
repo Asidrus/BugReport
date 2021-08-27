@@ -56,9 +56,12 @@ class GoogleSheets:
         self.getSheets()
 
     def addData(self, sheet, data):
-        raw = self.service.spreadsheets().values().get(spreadsheetId=self.SSID,
-                                                       range=f"{sheet.Title}!A1:{ind2str(len(self.__Columns__))}{self.__MaxBugs__}",
-                                                       majorDimension='ROWS').execute()["values"]
+        try:
+            raw = self.service.spreadsheets().values().get(spreadsheetId=self.SSID,
+                                                           range=f"{sheet.Title}!A1:{ind2str(len(sheet.Columns))}{sheet.Rows}",
+                                                           majorDimension='ROWS').execute()["values"]
+        except:
+            raw = [0,0]
         ind = len(raw) + 1
         cover = lambda t, l: f"=if({l}2,1,0)*\"{t}\""
         lines = []
