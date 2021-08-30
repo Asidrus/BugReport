@@ -1,3 +1,7 @@
+import sys
+import pathlib
+path = str(pathlib.Path(__file__).parent.resolve())
+sys.path.insert(-1, path)
 import httplib2
 import apiclient.discovery
 from oauth2client.service_account import ServiceAccountCredentials
@@ -8,16 +12,15 @@ from Color import Color
 from GenRequests import *
 
 ind2str = lambda ind: chr(65 + ind)
-path = os.path.abspath(os.getcwd())
 
 
-class GoogleSheets:
+class GoogleSheet:
     __Sheets__ = list()
     SSID: str
     CREDENTIALS_FILE: str
     TypeOfDoc: str
 
-    def __init__(self, SSID, typeOfDoc, CREDENTIALS_FILE=path + 'stable-ring-316114-8acf36454762.json'):
+    def __init__(self, SSID, typeOfDoc, CREDENTIALS_FILE=path + '/stable-ring-316114-8acf36454762.json'):
         self.SSID = SSID
         credentials = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_FILE,
                                                                        ['https://www.googleapis.com/auth/spreadsheets',
