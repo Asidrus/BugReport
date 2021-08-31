@@ -14,7 +14,7 @@ from GenRequests import *
 ind2str = lambda ind: chr(65 + ind)
 
 
-class GoogleSheet:
+class GoogleSheets:
     __Sheets__ = list()
     SSID: str
     CREDENTIALS_FILE: str
